@@ -1,0 +1,99 @@
+apiVersion: kubeflow.org/v1
+kind: TFJob
+metadata:
+  name: basic-model
+  namespace: kubeflow
+spec:
+  tfReplicaSpecs:
+    PS:
+      replicas: 2
+      restartPolicy: Never
+      template:
+        metadata:
+          labels:
+            applicationId: "basic-model"
+            queue: root.system.system-normal
+          annotations:
+            run.ai/simulated-gpu-utilization: "10-20"
+            yunikorn.apache.org/schedulingPolicyParameters: "gangSchedulingStyle=Hard"
+            yunikorn.apache.org/task-group-name: basic-model
+            yunikorn.apache.org/task-groups: |-
+              [{
+                  "name": "basic-model",
+                  "minMember": 2,
+                  "minResource": {
+                    "cpu": "2m",
+                    "memory": "6M",
+                    "nvidia.com/gpu": 10
+                  },
+                  "nodeSelector": {},
+                  "tolerations": [],
+                  "affinity": {}
+              }]
+        spec:
+          schedulerName: yunikorn
+          activeDeadlineSeconds: 150
+          containers:
+            - args:
+                - python
+                - dist_mnist.py
+                - "--task_index"
+                - "0"
+                - "--ps_hosts"
+                - "iris-test2:2222"
+                - "--worker_hosts"
+                - "iris-testvm1:2222,iris-testvm2:2222"
+                - "--gpu_memory_fraction"
+                - "0.1"
+              name: tensorflow
+              image: kubeflow/tf-mnist-test:1.0
+              imagePullPolicy: IfNotPresent
+              resources:
+                limits:
+                  nvidia.com/gpu: 2
+    Worker:
+      replicas: 4
+      restartPolicy: Never
+      template:
+        metadata:
+          labels:
+            applicationId: "basic-model"
+            queue: root.system.system-normal
+          annotations:
+            run.ai/simulated-gpu-utilization: "10-20"
+            yunikorn.apache.org/schedulingPolicyParameters: "gangSchedulingStyle=Hard"
+            yunikorn.apache.org/task-group-name: basic-model
+            yunikorn.apache.org/task-groups: |-
+              [{
+                  "name": "basic-model",
+                  "minMember": 2,
+                  "minResource": {
+                    "cpu": "30m",
+                    "memory": "60M",
+                    "nvidia.com/gpu": 10
+                  },
+                  "nodeSelector": {},
+                  "tolerations": [],
+                  "affinity": {}
+              }]
+        spec:
+          schedulerName: yunikorn
+          activeDeadlineSeconds: 150
+          containers:
+            - args:
+                - python
+                - dist_mnist.py
+                - "--task_index"
+                - "0"
+                - "--ps_hosts"
+                - "iris-test2:2222"
+                - "--worker_hosts"
+                - "iris-testvm1:2222,iris-testvm2:2222"
+                - "--gpu_memory_fraction"
+                - "0.1"
+              name: tensorflow
+              image: kubeflow/tf-mnist-test:1.0
+              imagePullPolicy: IfNotPresent
+              resources:
+                limits:
+                  nvidia.com/gpu: 2
