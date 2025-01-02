@@ -1,0 +1,48 @@
+apiVersion: kubeflow.org/v1
+kind: TFJob
+metadata:
+  name: resnet101
+  namespace: kubeflow
+spec:
+  tfReplicaSpecs:
+    Worker:
+      replicas: 1
+      restartPolicy: Never
+      template:
+        metadata:
+          labels:
+            applicationId: "resnet101"
+            queue: root.system.system-normal
+          annotations:
+            yunikorn.apache.org/schedulingPolicyParameters: "gangSchedulingStyle=Hard"
+            yunikorn.apache.org/task-group-name: resnet101
+            yunikorn.apache.org/task-groups: |-
+              [{
+                  "name": "resnet101",
+                  "minMember": 1,
+                  "minResource": {
+                    "cpu": "5",
+                    "memory": "2G,
+                    "nvidia.com/gpu": 1
+                  },
+                  "nodeSelector": {},
+                  "tolerations": [],
+                  "affinity": {}
+              }]
+        spec:
+          schedulerName: yunikorn
+          activeDeadlineSeconds: 1800
+          containers:
+            - args:
+                - "--num_gpus"
+                - "0"
+                - "--gpu_memory_limit"
+                - "4096"
+                - "--epochs"
+                - "5"
+              name: tensorflow
+              image: 192.168.40.100:30116/tf-resnet-test:7.0
+              imagePullPolicy: IfNotPresent
+              resources:
+                limits:
+                  nvidia.com/gpu: 1
