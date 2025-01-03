@@ -41,8 +41,10 @@ spec:
                 - "--epochs"
                 - "5"
               name: tensorflow
-              image: 192.168.40.100:30116/tf-resnet-test:7.0
+              image: kubeflow/tf-resnet-test:1.0
               imagePullPolicy: IfNotPresent
               resources:
                 limits:
                   nvidia.com/gpu: 1
+                  cpu: 2
+                  memory: 2G

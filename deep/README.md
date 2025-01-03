@@ -6,6 +6,8 @@
    or non-distributed ML jobs on K8s. You can install it with the following command.
 ```   
 kubectl apply -k "github.com/kubeflow/training-operator/manifests/overlays/standalone?ref=v1.3.0"
+helm repo add yunikorn https://apache.github.io/yunikorn-release
+helm install yunikorn yunikorn/yunikorn --namespace yunikorn --create-namespace --version 1.3.0
 ```
 3. Build a docker image  with the following command.
 ```
@@ -15,16 +17,16 @@ docker build -f Dockerfile -t kubeflow/tf-resnet-test:1.0 .
 ## Run a TensorFlow job
 You need to create a TFjob and configure it to use YuniKorn scheduler.
 
-Limit the job duration and the GPU utilization by editing yaml file
+Limit the job duration, epochs and the GPU memory usage by editing yaml file
 ```yaml
 spec:
     schedulerName: yunikorn
-    activeDeadlineSeconds: 150
+    activeDeadlineSeconds: 1800
     containers:
     - args:
         ...
         - "--num_gpus"
-        - "0"
+        - "1"
         - "--gpu_memory_limit"
         - "4096"
         - "--epochs"
