@@ -21,7 +21,12 @@ docker run -it --runtime=habana --ipc=host --rm --name resnet-hpu pytorch-resnet
 
 **Run Training on 8 HPU**
 ```
+# both world_size and num_hpus need to update
 docker run -it --runtime=habana --ipc=host --rm --name pytorch-resnet-hpu pytorch-resnet-hpu python3 gaudi_spawn.py --world_size 8 --use_mpi resnet101.py --num_hpus 8 --dataset food101
+```
+or
+```
+docker run -it --runtime=habana --ipc=host --rm --name pytorch-resnet-hpu pytorch-resnet-hpu mpirun -n 8 --bind-to core --map-by slot:PE=7 --rank-by core --report-bindings --allow-run-as-root python3 resnet101.py --num_hpus 8 --dataset food101
 ```
 
 **Run Training on CPU**
