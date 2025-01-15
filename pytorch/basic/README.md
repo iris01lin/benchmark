@@ -15,7 +15,7 @@ docker build -f Dockerfile -t pytorch-basic-hpu .
 docker run -it --runtime=habana --ipc=host --rm --name basic-hpu pytorch-basic-hpu
 ```
 
-**Run Training on 8 HPU ** 
+**Run Training on 8 HPU** 
 ```
 # both world_size and num_hpus need to update
 docker run -it --runtime=habana --ipc=host --rm --name basic-hpu pytorch-basic-hpu python3 gaudi_spawn.py --world_size 8 --use_mpi basic.py --num_hpus 8
