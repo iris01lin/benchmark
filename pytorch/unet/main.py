@@ -28,7 +28,7 @@ def get_main_args(strings=None):
     arg = parser.add_argument
 
     arg("--framework", type=str, choices=["pytorch", "pytorch-lightning"],
-        default="pytorch-lightning",
+        default="pytorch",
         help='Launch model training on pytorch or pytorch-lightning framework'
     )
     arg(

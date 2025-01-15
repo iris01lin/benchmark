@@ -155,7 +155,7 @@ class Trainer:
                     val_losses.append(loss)
             output_loss = torch.mean(torch.stack([n['val_loss'] for n in val_losses]), dim = 0)
             tepoch.set_postfix(loss=output_loss.item())
-        kwargs = model.validation_epoch_end(val_losses)
+        kwargs = model.on_validation_epoch_end()
         if main_process():
             output_loss_print = output_loss.item()
             val_loss= kwargs['val_loss'].item()

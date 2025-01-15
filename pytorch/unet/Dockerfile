@@ -9,4 +9,4 @@ RUN mkdir -p /data /results
 RUN python3 download.py --task 01
 RUN python3 preprocess.py --task 01 --dim 2
 
-ENTRYPOINT ["python3", "main.py"]
+CMD ["python3", "main.py", "--hpus", "1"]
