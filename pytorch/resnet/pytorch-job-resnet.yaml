@@ -1,0 +1,56 @@
+apiVersion: kubeflow.org/v1
+kind: PyTorchJob
+metadata:
+  name: resnet101
+  namespace: kubeflow
+spec:
+  pytorchReplicaSpecs:
+    Master:
+      replicas: 1
+      restartPolicy: Never
+      template:
+        metadata:
+          labels:
+            applicationId: "resnet101"
+            queue: root.system.system-normal
+          annotations:
+            yunikorn.apache.org/schedulingPolicyParameters: "gangSchedulingStyle=Hard"
+            yunikorn.apache.org/task-group-name: resnet101
+            yunikorn.apache.org/task-groups: |-
+              [{
+                  "name": "resnet101",
+                  "minMember": 1,
+                  "minResource": {
+                    "cpu": "5",
+                    "memory": "2G,
+                    "habana.ai/gaudi": 1
+                  },
+                  "nodeSelector": {},
+                  "tolerations": [],
+                  "affinity": {}
+              }]
+        spec:
+          hostIPC: true
+          runtimeClassName: habana
+          schedulerName: yunikorn
+          activeDeadlineSeconds: 1800
+          containers:
+            - args:
+                - python3 
+                - gaudi_spawn.py 
+                - --world_size=8 
+                - --use_mpi
+                - basic.py 
+                - --num_hpus=8
+                - --device=hpu
+                - --batch_size=64
+                - --epochs=5
+              name: pytorch-resnet-hpu
+              image: pytorch-resnet-hpu
+              imagePullPolicy: IfNotPresent
+              securityContext:
+                capabilities:
+                  add: ["SYS_NICE"]
+              resources:
+                limits:
+                  habana.ai/gaudi: 1

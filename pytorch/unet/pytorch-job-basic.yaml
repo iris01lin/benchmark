@@ -1,0 +1,52 @@
+apiVersion: kubeflow.org/v1
+kind: PyTorchJob
+metadata:
+  name: unet
+  namespace: kubeflow
+spec:
+  pytorchReplicaSpecs:
+    Master:
+      replicas: 2
+      restartPolicy: Never
+      template:
+        metadata:
+          labels:
+            applicationId: "unet"
+            queue: root.system.system-normal
+          annotations:
+            yunikorn.apache.org/schedulingPolicyParameters: "gangSchedulingStyle=Hard"
+            yunikorn.apache.org/task-group-name: unet
+            yunikorn.apache.org/task-groups: |-
+              [{
+                  "name": "unet",
+                  "minMember": 2,
+                  "minResource": {
+                    "cpu": "30m",
+                    "memory": "60M",
+                    "habana.ai/gaudi": 2
+                  },
+                  "nodeSelector": {},
+                  "tolerations": [],
+                  "affinity": {}
+              }]
+        spec:
+          runtimeClassName: habana
+          hostIPC: true
+          schedulerName: yunikorn
+          activeDeadlineSeconds: 3000
+          containers:
+            - args:
+                - --hpus=1
+                - --batch_size=64
+                - --val_batch_size=64
+                - --min_epochs=3
+                - --max_epochs=10
+              name: pytorch-unet-gpu
+              image: pytorch-unet-hpu
+              imagePullPolicy: IfNotPresent
+              securityContext:
+                capabilities:
+                  add: ["SYS_NICE"]
+              resources:
+                limits:
+                  habana.ai/gaudi: 1

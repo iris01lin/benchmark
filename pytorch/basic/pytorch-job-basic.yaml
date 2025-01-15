@@ -1,0 +1,56 @@
+apiVersion: kubeflow.org/v1
+kind: PyTorchJob
+metadata:
+  name: basic-model
+  namespace: kubeflow
+spec:
+  pytorchReplicaSpecs:
+    Master:
+      replicas: 2
+      restartPolicy: Never
+      template:
+        metadata:
+          labels:
+            applicationId: "basic-model"
+            queue: root.system.system-normal
+          annotations:
+            yunikorn.apache.org/schedulingPolicyParameters: "gangSchedulingStyle=Hard"
+            yunikorn.apache.org/task-group-name: basic-model
+            yunikorn.apache.org/task-groups: |-
+              [{
+                  "name": "basic-model",
+                  "minMember": 2,
+                  "minResource": {
+                    "cpu": "30m",
+                    "memory": "60M",
+                    "habana.ai/gaudi": 2
+                  },
+                  "nodeSelector": {},
+                  "tolerations": [],
+                  "affinity": {}
+              }]
+        spec:
+          hostIPC: true
+          runtimeClassName: habana
+          schedulerName: yunikorn
+          activeDeadlineSeconds: 300
+          containers:
+            - args:
+                - python3 
+                - gaudi_spawn.py 
+                - --world_size=8 
+                - --use_mpi
+                - basic.py 
+                - --num_hpus=8
+                - --device=hpu
+                - --batch_size=64
+                - --epochs=5
+              name: pytorch-basic-hpu
+              image: pytorch-basic-hpu
+              imagePullPolicy: IfNotPresent
+              securityContext:
+                capabilities:
+                  add: ["SYS_NICE"]
+              resources:
+                limits:
+                  habana.ai/gaudi: 1
