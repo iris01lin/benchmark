@@ -1,4 +1,4 @@
-Train Pytorch Resnet101 model
+# Train Pytorch Resnet101 model
 
 ## Setup
 1. Please follow the instructions provided in the [Gaudi Installation Guide](https://docs.habana.ai/en/latest/Installation_Guide/index.html) to set up the environment.
