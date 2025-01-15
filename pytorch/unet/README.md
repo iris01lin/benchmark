@@ -12,17 +12,17 @@ docker build -f Dockerfile -t pytorch-unet-hpu .
 ## Training Example
 **Run Training on 1 HPU**
 ```
-docker run -it --runtime=habana --ipc=host --rm --name unet-hpu pytorch-unet-hpu --hpus 1
+docker run -it --runtime=habana --ipc=host --rm --name unet-hpu pytorch-unet-hpu
 ```
 
 **Run Training on 8 HPU**
 ```
-docker run -it --runtime=habana --ipc=host --rm --name unet-hpu pytorch-unet-hpu --hpus 8
+docker run -it --runtime=habana --ipc=host --rm --name unet-hpu pytorch-unet-hpu python3 main.py --hpus 8
 ```
 
 **Run Training on CPU**
 ```
-docker run -it --ipc=host --rm --name unet-cpu pytorch-unet-hpu --cpus 1 --device cpu --framework pytorch-lightning
+docker run -it --ipc=host --rm --name unet-cpu pytorch-unet-hpu python3 main.py --cpus 1 --device cpu --framework pytorch-lightning
 ```
 
 ## Run a Pytorch job by Yunikorn
