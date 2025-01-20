@@ -51,9 +51,6 @@ elif module_available("pytorch_lightning"):
     import pytorch_lightning as pl
 
 from statistics import mean
-import logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 class NNUnet(pl.LightningModule if os.getenv('framework')=='PTL' else nn.Module):
     def __init__(self, args):
@@ -107,7 +104,7 @@ class NNUnet(pl.LightningModule if os.getenv('framework')=='PTL' else nn.Module)
                 self.train_loss[window_offset] = loss.item()
             self.train_loss_count += 1
             moving_average_loss = round(mean(self.train_loss), 4)
-            logger.info(f"Loss: {moving_average_loss}")
+            self.log("loss", moving_average_loss, prog_bar=True)
 
         return loss
 
@@ -287,14 +284,14 @@ class NNUnet(pl.LightningModule if os.getenv('framework')=='PTL' else nn.Module)
              self.current_epoch = self.trainer.current_epoch
 
         if self.current_epoch < self.args.skip_first_n_eval:
-            logger.info(f"dice_sum: {0.001 * self.current_epoch}")
+            self.log("dice_sum", 0.001 * self.current_epoch)
             self.dice.reset()
             return None
         if os.getenv('framework') == 'PTL': #Pytorch and PTL compatibility
             loss = torch.stack(self.validation_step_outputs).mean() if not self.current_epoch % 2 else torch.tensor(0, device=get_device_str(self.args))
         else:
             loss = torch.stack(self.validation_step_outputs).mean()
-        logger.info(f"val_loss: {loss.item()}")
+        self.log("val_loss", loss)
         self.validation_step_outputs.clear()
         dice = self.dice.compute()
         dice_sum = torch.sum(dice)
@@ -320,9 +317,9 @@ class NNUnet(pl.LightningModule if os.getenv('framework')=='PTL' else nn.Module)
                 self.dllogger.flush()
 
         if not self.current_epoch % 2 and os.getenv('framework') == 'PTL': #PyTorch and PTL compatibility
-            logger.info(f"val_loss: {loss.item()}")
-            logger.info(f"dice_sum: {dice_sum.item()}")
-            logger.info(f"mean_dice: {mean_dice}")
+            self.log("val_loss", loss)
+            self.log("dice_sum", dice_sum)
+            self.log("mean_dice", mean_dice)
 
         if os.getenv('framework') == 'NPT':  #PyTorch and PTL compatibility
            return {"val_loss":loss, "dice_sum":dice_sum}
